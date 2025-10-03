@@ -6,6 +6,7 @@ public class Paddle : MonoBehaviour
 {
     Rigidbody2D rb;
     public float moveSpeed = 7f;
+    public float yBound = 3.5f;
 
     public bool PaddingLeft = false;
 
@@ -23,16 +24,18 @@ public class Paddle : MonoBehaviour
 
     void BasicMovement()
     {
-        float movement;
+        float inputMovement;
         if (PaddingLeft)
         {
-            movement = Input.GetAxisRaw("VerticalLeft");
+            inputMovement = Input.GetAxisRaw("VerticalLeft");
         }
         else
         {
-            movement = Input.GetAxisRaw("VerticalRight");
+            inputMovement = Input.GetAxisRaw("VerticalRight");
         }
+        Vector2 paddlePosition = transform.position;
+        paddlePosition.y = Mathf.Clamp(paddlePosition.y + inputMovement * moveSpeed * Time.deltaTime, -yBound, yBound);
 
-        rb.velocity = new Vector2(0, movement * moveSpeed);
+        transform.position = paddlePosition;
     }
 }

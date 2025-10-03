@@ -568,6 +568,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
+  yBound: 3.5
   PaddingLeft: 0
 --- !u!1 &519420028
 GameObject:
@@ -797,6 +798,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
+  yBound: 3.5
   PaddingLeft: 1
 --- !u!1 &1021925666
 GameObject:
