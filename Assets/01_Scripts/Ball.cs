@@ -5,6 +5,10 @@ using UnityEngine;
 public class Ball : MonoBehaviour
 {
     public float initVelocity = 4f;
+
+    //Auemnta un 10% mas al collisionar con un paddle
+    public float velocityMultiplier = 1.1f;
+
     Rigidbody2D rb;
 
     // Start is called before the first frame update
@@ -26,5 +30,13 @@ public class Ball : MonoBehaviour
         float yVelocity = Random.Range(0, 2) == 1 ? 1 : -1;
 
         rb.velocity = new Vector2(xVelocity, yVelocity) * initVelocity;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Paddle"))
+        {
+            rb.velocity = rb.velocity * velocityMultiplier;
+        }
     }
 }
