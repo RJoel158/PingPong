@@ -77,8 +77,7 @@ public class Ball : MonoBehaviour
             //Intanciar sonido de rebote con la raqueta
 
 
-            //Instanciar sprite de choque con la raqueta
-            Instantiate(particle);
+            
         }
     }
 
@@ -100,7 +99,7 @@ public class Ball : MonoBehaviour
         }
     }
 
-
+    
     private void OnTriggerEnter2D(Collider2D collision)
     {
         //Si la pelota toca la meta del lado izquierdo
@@ -110,12 +109,11 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleRightScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
+                
 
-
-            //Instanciar sprite explosion en la posición de la pelota
-            GameObject explosionInstance = Instantiate(particle, transform.position, Quaternion.identity);
-
-            Destroy(explosionInstance, 2f);
+            
+            //Iniciar efecto de explosión con desvanecimiento
+            
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
@@ -129,12 +127,13 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleLeftScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
-
+        
 
             //Instanciar sprite explosion en la posición de la pelota
-            GameObject explosionInstance = Instantiate(particle, transform.position, Quaternion.identity);
+           
 
-            Destroy(explosionInstance, 2f); // Destruye la instancia después de 1 segundo
+            //Iniciar efecto de explosión con desvanecimiento
+            
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
