@@ -6,7 +6,8 @@ public class Ball : MonoBehaviour
 {
     //Puntos que sumara
     public int points = 1;
-
+   
+    
     //valocidad inicial de la pelota, con la que comenzara
     public float initVelocity = 4f;
 
@@ -48,8 +49,11 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("Paddle"))
         {
             rb.velocity = rb.velocity * velocityMultiplier;
+            
+            
         }
     }
+   
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -57,12 +61,12 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("GoalLeft"))
         {
             //Aumentar el puntaje del jugador derecho
-            GameManager.Instance.AddPaddleLeftScore(points);
+            GameManager.Instance.AddPaddleRightScore(points);
 
-            //Reiniciar la posición de la pelota y las raquetas
+            //Reiniciar la posiciï¿½n de la pelota y las raquetas
             GameManager.Instance.Restart();
 
-            //Lanzar la pelota en una nueva dirección
+            //Lanzar la pelota en una nueva direcciï¿½n
             Launch();
         }
 
@@ -70,12 +74,12 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("GoalRight"))
         {
             //Aumentar el puntaje del jugador izquierdo
-            GameManager.Instance.AddPaddleRightScore(points);
+            GameManager.Instance.AddPaddleLeftScore(points);
 
-            //Reiniciar la posición de la pelota y las raquetas
+            //Reiniciar la posiciï¿½n de la pelota y las raquetas
             GameManager.Instance.Restart();
 
-            //Lanzar la pelota en una nueva dirección
+            //Lanzar la pelota en una nueva direcciï¿½n
             Launch();
         }
     }

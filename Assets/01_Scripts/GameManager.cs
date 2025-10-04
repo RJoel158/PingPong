@@ -43,7 +43,14 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (paddleLeftScore >=10)
+        {
+            Debug.Log("Gano la raqueta izquierda");
+        }
+        else if (paddleRightScore >=10)
+        {
+            Debug.Log("Gano la raqueta derecha");
+        }
     }
 
     //Metodo para sumar puntos a la variable del lado izquierdo, y mostrar en pantalla atraves de su correspondiente texto

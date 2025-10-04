@@ -13,6 +13,8 @@ public class Paddle : MonoBehaviour
     //Indetificador de: si es la raqueta izquierda = true, si es la raqueta derecha = false
     public bool PaddingLeft = false;
 
+    public Animator animator;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,7 +46,7 @@ public class Paddle : MonoBehaviour
         Vector2 paddlePosition = transform.position;
 
         //Mathf.Clamp limita un valor dentro de un rango:
-        //- Si el valor está entre min y max, lo devuelve igual.
+        //- Si el valor estï¿½ entre min y max, lo devuelve igual.
         //- Si el valor es menor que min, devuelve min.
         //- Si el valor es mayor que max, devuelve max
         //Limitar que la raqueta salga de rango, definido en yBound
@@ -52,5 +54,12 @@ public class Paddle : MonoBehaviour
 
         //Pasamos ese valor al transform de este gameObject
         transform.position = paddlePosition;
+    }
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Ball"))
+        {
+            animator.SetTrigger("hiting");
+        }
     }
 }
