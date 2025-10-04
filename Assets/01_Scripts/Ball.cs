@@ -20,6 +20,14 @@ public class Ball : MonoBehaviour
 
     Rigidbody2D rb;
 
+    //Variables para el sonido al chocar con la pelota
+    public AudioClip hitSound; //sonido al momento de choque
+    private AudioSource audioSource;
+
+    //Variables para el sonido al momento de que un jugador pierda
+    public AudioClip gameOverSound;
+    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -27,6 +35,9 @@ public class Ball : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
 
         Launch();
+
+        //LLamada para obtener el audiosource en el mismo objeto
+        audioSource = GetComponent<AudioSource>();
     }
 
 
@@ -71,12 +82,15 @@ public class Ball : MonoBehaviour
     {
         //Cuando colisione con una raqueta que tiene el tage de Paddle, multiplicamo su velocidad actual por el valor de la variable velocityMultiplier
         //Por defecto esta en 10% deifnido arriba, totalmente regulable
-        if (collision.gameObject.CompareTag("Paddle"))
+        if (collision.gameObject.CompareTag("Paddle"))         
         {
             rb.velocity = rb.velocity * velocityMultiplier;
             //Intanciar sonido de rebote con la raqueta
 
-
+            //lo puse aqui adentro para cuando choque con alguno de los paddle suene
+            //PlayOneShot es para reproducir algo específico una sola vez aunque haya otros sonidos
+            //hitsound es la referencia al archivo de audio 
+            audioSource.PlayOneShot(hitSound);
             
         }
     }
@@ -109,8 +123,9 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleRightScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
-                
 
+            //Suena gameover cuando mete gol
+            audioSource.PlayOneShot(gameOverSound);
             
             //Iniciar efecto de explosión con desvanecimiento
             
@@ -127,13 +142,14 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleLeftScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
-        
+
 
             //Instanciar sprite explosion en la posición de la pelota
-           
 
+            //Suena gameover cuando mete gol
+            audioSource.PlayOneShot(gameOverSound);
             //Iniciar efecto de explosión con desvanecimiento
-            
+
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
