@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
+    public int points = 1;
     public float initVelocity = 4f;
 
     //Auemnta un 10% mas al collisionar con un paddle
@@ -37,6 +38,22 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("Paddle"))
         {
             rb.velocity = rb.velocity * velocityMultiplier;
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("GoalLeft"))
+        {
+            GameManager.Instance.AddPaddleLeftScore(points);
+            GameManager.Instance.Restart();
+            Launch();
+        }
+        if (collision.gameObject.CompareTag("GoalRight"))
+        {
+            GameManager.Instance.AddPaddleRightScore(points);
+            GameManager.Instance.Restart();
+            Launch();
         }
     }
 }

@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Paddle
+  - GoalLeft
+  - GoalRight
   layers:
   - Default
   - TransparentFX
