@@ -20,20 +20,18 @@ public class Paddle : MonoBehaviour
     private static bool gameEnded = false;
 
     // Variable para controlar si ya se ejecutó la animación de muerte en este paddle
-    private bool deathAnimationExecuted = false;
-
-    // Start is called before the first frame update
+    private bool deathAnimationExecuted = false;    // Start is called before the first frame update
     void Start()
     {
         //Obtener referencia de rigidbody
         rb = GetComponent<Rigidbody2D>();
 
-        // Reiniciar todas las variables para la nueva partida
+        // Reiniciar variables para nueva partida
         deathAnimationExecuted = false;
         gameEnded = false;
-    }
 
-    // Update is called once per frame
+        Debug.Log($"🔄 NUEVA PARTIDA - Paddle {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} iniciado");
+    }    // Update is called once per frame
     void Update()
     {
         BasicMovement();
@@ -76,56 +74,43 @@ public class Paddle : MonoBehaviour
     }
     void VerifyWinner()
     {
-        // Solo verificar si el juego no ha terminado aún
-        if (gameEnded) return;
+        // Si ya ejecuté mi animación de muerte, no hacer nada más
+        if (deathAnimationExecuted) return;
 
-        // Acceder a los puntajes desde GameManager
-        if (GameManager.Instance.GetPaddleLeftScore() >= 1)
+        // Verificar condiciones de victoria
+        bool leftWon = GameManager.Instance.GetPaddleLeftScore() >= 1;
+        bool rightWon = GameManager.Instance.GetPaddleRightScore() >= 1;
+
+        // Si alguien ganó, procesar INMEDIATAMENTE
+        if (leftWon || rightWon)
         {
-            Debug.Log("Ganó la raqueta izquierda");
+            Debug.Log($" PADDLE {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} detectó victoria: leftWon={leftWon}, rightWon={rightWon}, gameEnded={gameEnded}");
 
-            // Marcar que el juego ha terminado
-            gameEnded = true;
-
-            // Detener la pelota cuando hay un ganador
-            StopBallOnWin();
-
-            // Si esta raqueta es la derecha (perdedora), ejecuta animación de muerte INMEDIATAMENTE
-            if (!PaddingLeft && !deathAnimationExecuted)
+            // Solo detener la pelota una vez (el primer paddle que detecte)
+            if (!gameEnded)
             {
-                ExecuteDeathAnimation();
+                gameEnded = true;
+                StopBallOnWin();
+                Debug.Log(" Pelota detenida por primera vez");
             }
 
-            // Solo el paddle izquierdo (ganador) inicia el reinicio para evitar múltiples corrutinas
-            if (PaddingLeft)
+            // Verificar si ESTE paddle debe ejecutar animación de muerte
+            bool shouldDie = (PaddingLeft && rightWon) || (!PaddingLeft && leftWon);
+
+            if (shouldDie && !deathAnimationExecuted)
             {
+                Debug.Log($" PADDLE {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} perdió - Ejecutando animación");
+                ExecuteDeathAnimation();
+
+                // Solo el perdedor inicia el reinicio
                 StartCoroutine(RestartSceneAfterDelay(5f));
             }
-        }
-        else if (GameManager.Instance.GetPaddleRightScore() >= 1)
-        {
-            Debug.Log("Ganó la raqueta derecha");
-
-            // Marcar que el juego ha terminado
-            gameEnded = true;
-
-            // Detener la pelota cuando hay un ganador
-            StopBallOnWin();
-
-            // Si esta raqueta es la izquierda (perdedora), ejecuta animación de muerte INMEDIATAMENTE
-            if (PaddingLeft && !deathAnimationExecuted)
+            else if (!shouldDie)
             {
-                ExecuteDeathAnimation();
-            }
-
-            // Solo el paddle derecho (ganador) inicia el reinicio para evitar múltiples corrutinas
-            if (!PaddingLeft)
-            {
-                StartCoroutine(RestartSceneAfterDelay(5f));
+                Debug.Log($" PADDLE {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} ganó - Sin animación");
             }
         }
     }
-
     void StopBallOnWin()
     {
         // Buscar la pelota en la escena
@@ -155,11 +140,21 @@ public class Paddle : MonoBehaviour
 
     void ExecuteDeathAnimation()
     {
+        Debug.Log($" INICIANDO ExecuteDeathAnimation para paddle: {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+
         // Marcar que la animación ya se ejecutó
         deathAnimationExecuted = true;
 
         // Ejecutar trigger de muerte
-        animator.SetTrigger("die");
+        if (animator != null)
+        {
+            animator.SetTrigger("die");
+            Debug.Log($" Trigger 'die' enviado al animator del paddle {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+        }
+        else
+        {
+            Debug.LogError($" Animator es NULL en paddle {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+        }
 
         // Desactivar el movimiento para que no interfiera con la animación
         moveSpeed = 0f;
@@ -167,6 +162,6 @@ public class Paddle : MonoBehaviour
         // Opcional: Desactivar el collider para que no interactúe más con la pelota
         GetComponent<Collider2D>().enabled = false;
 
-        Debug.Log($"Animación de muerte ejecutada para paddle: {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+        Debug.Log($" Animación de muerte completada para paddle: {(PaddingLeft ? "Izquierdo" : "Derecho")}");
     }
 }

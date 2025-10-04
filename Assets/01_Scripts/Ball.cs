@@ -15,6 +15,11 @@ public class Ball : MonoBehaviour
     //Auemnta un 10% mas al collisionar con un paddle
     public float velocityMultiplier = 1.1f;
 
+    // Sistema de estela
+    public ParticleSystem trailParticles;
+    public TrailRenderer trailRenderer;
+    public bool enableTrail = true;
+
     Rigidbody2D rb;
 
     // Start is called before the first frame update
@@ -28,7 +33,46 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        UpdateTrailEffect();
+    }
 
+    void UpdateTrailEffect()
+    {
+        if (trailParticles != null && enableTrail)
+        {
+            // Obtener la velocidad actual de la pelota
+            Vector2 ballVelocity = rb.velocity;
+
+            // Si la pelota se está moviendo
+            if (ballVelocity.magnitude > 0.1f)
+            {
+                // Calcular la dirección opuesta al movimiento (para la estela)
+                Vector2 trailDirection = -ballVelocity.normalized;
+
+                // Configurar la dirección de las partículas
+                var velocityOverLifetime = trailParticles.velocityOverLifetime;
+                velocityOverLifetime.enabled = true;
+                velocityOverLifetime.space = ParticleSystemSimulationSpace.World;
+
+                // Establecer la velocidad de las partículas en dirección opuesta
+                velocityOverLifetime.x = trailDirection.x * 2f; // Multiplicador para intensidad
+                velocityOverLifetime.y = trailDirection.y * 2f;
+
+                // Activar el sistema de partículas si está pausado
+                if (!trailParticles.isPlaying)
+                {
+                    trailParticles.Play();
+                }
+            }
+            else
+            {
+                // Pausar partículas si la pelota no se mueve
+                if (trailParticles.isPlaying)
+                {
+                    trailParticles.Pause();
+                }
+            }
+        }
     }
 
     void Launch()
@@ -39,6 +83,12 @@ public class Ball : MonoBehaviour
 
         //Asignar la velocidad inicial a la pelota
         rb.velocity = new Vector2(xVelocity, yVelocity) * initVelocity;
+
+        // Iniciar la estela cuando la pelota se lanza
+        if (trailParticles != null && enableTrail)
+        {
+            trailParticles.Play();
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -59,6 +109,18 @@ public class Ball : MonoBehaviour
     {
         rb.velocity = Vector2.zero;
         rb.angularVelocity = 0f;
+
+        // Detener la estela cuando la pelota se detiene
+        if (trailParticles != null && trailParticles.isPlaying)
+        {
+            trailParticles.Stop();
+        }
+
+        // Limpiar el trail renderer
+        if (trailRenderer != null)
+        {
+            trailRenderer.Clear();
+        }
     }
 
     // Método público para reanudar el movimiento de la pelota
