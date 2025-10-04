@@ -26,6 +26,7 @@ public class Paddle : MonoBehaviour
     void Update()
     {
         BasicMovement();
+        VerifyWinner();
     }
 
     void BasicMovement()
@@ -61,5 +62,39 @@ public class Paddle : MonoBehaviour
         {
             animator.SetTrigger("hiting");
         }
+    }
+    void VerifyWinner()
+    {
+        // Acceder a los puntajes desde GameManager
+        if (GameManager.Instance.GetPaddleLeftScore() >= 10)
+        {
+            Debug.Log("Ganó la raqueta izquierda");
+            // Si esta raqueta es la derecha (perdedora), ejecuta animación de muerte
+            if (!PaddingLeft)
+            {
+                ExecuteDeathAnimation();
+            }
+        }
+        else if (GameManager.Instance.GetPaddleRightScore() >= 10)
+        {
+            Debug.Log("Ganó la raqueta derecha");
+            // Si esta raqueta es la izquierda (perdedora), ejecuta animación de muerte
+            if (PaddingLeft)
+            {
+                ExecuteDeathAnimation();
+            }
+        }
+    }
+
+    void ExecuteDeathAnimation()
+    {
+        // Ejecutar trigger de muerte
+        animator.SetTrigger("Die");
+
+        // Desactivar el movimiento para que no interfiera con la animación
+        moveSpeed = 0f;
+
+        // Opcional: Desactivar el collider para que no interactúe más con la pelota
+        GetComponent<Collider2D>().enabled = false;
     }
 }
