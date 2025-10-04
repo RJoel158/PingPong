@@ -438,7 +438,7 @@ GameObject:
   - component: {fileID: 434001502}
   m_Layer: 0
   m_Name: PaddleRight
-  m_TagString: Untagged
+  m_TagString: Paddle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -668,7 +668,7 @@ GameObject:
   - component: {fileID: 775980223}
   m_Layer: 0
   m_Name: PaddleLeft
-  m_TagString: Untagged
+  m_TagString: Paddle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -918,6 +918,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1811367766}
+  - component: {fileID: 1811367769}
   - component: {fileID: 1811367765}
   - component: {fileID: 1811367768}
   - component: {fileID: 1811367767}
@@ -1030,6 +1031,19 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.49999997
+--- !u!114 &1811367769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1811367764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e58264f6a95c6d147a624db2950e7a57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  initVelocity: 4
 --- !u!1 &1972847136
 GameObject:
   m_ObjectHideFlags: 0
