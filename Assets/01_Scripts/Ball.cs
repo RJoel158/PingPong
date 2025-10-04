@@ -14,11 +14,9 @@ public class Ball : MonoBehaviour
     //Ajustar la velocidad de la pelota:
     //Auemnta un 10% mas al collisionar con un paddle
     public float velocityMultiplier = 1.1f;
+    public GameObject particle;
 
     // Sistema de estela
-    public ParticleSystem trailParticles;
-    public TrailRenderer trailRenderer;
-    public bool enableTrail = true;
 
     Rigidbody2D rb;
 
@@ -27,53 +25,35 @@ public class Ball : MonoBehaviour
     {
         //Referencia de riginbody
         rb = GetComponent<Rigidbody2D>();
+
         Launch();
     }
+
+
 
     // Update is called once per frame
     void Update()
     {
-        UpdateTrailEffect();
+        HandleBallFlip();
     }
 
-    void UpdateTrailEffect()
+    void HandleBallFlip()
     {
-        if (trailParticles != null && enableTrail)
+        // Verificar la dirección de la pelota
+        if (rb.velocity.x < 0) // Se mueve hacia la izquierda
         {
-            // Obtener la velocidad actual de la pelota
-            Vector2 ballVelocity = rb.velocity;
-
-            // Si la pelota se está moviendo
-            if (ballVelocity.magnitude > 0.1f)
-            {
-                // Calcular la dirección opuesta al movimiento (para la estela)
-                Vector2 trailDirection = -ballVelocity.normalized;
-
-                // Configurar la dirección de las partículas
-                var velocityOverLifetime = trailParticles.velocityOverLifetime;
-                velocityOverLifetime.enabled = true;
-                velocityOverLifetime.space = ParticleSystemSimulationSpace.World;
-
-                // Establecer la velocidad de las partículas en dirección opuesta
-                velocityOverLifetime.x = trailDirection.x * 2f; // Multiplicador para intensidad
-                velocityOverLifetime.y = trailDirection.y * 2f;
-
-                // Activar el sistema de partículas si está pausado
-                if (!trailParticles.isPlaying)
-                {
-                    trailParticles.Play();
-                }
-            }
-            else
-            {
-                // Pausar partículas si la pelota no se mueve
-                if (trailParticles.isPlaying)
-                {
-                    trailParticles.Pause();
-                }
-            }
+            // Hacer flip en X (escala negativa)
+            transform.localScale = new Vector3(-1.7f, 1.7f, 1f);
         }
+        else if (rb.velocity.x > 0) // Se mueve hacia la derecha
+        {
+            // Escala normal
+            transform.localScale = new Vector3(1.7f, 1.7f, 1f);
+        }
+        // Si rb.velocity.x == 0, mantener la escala actual
     }
+
+
 
     void Launch()
     {
@@ -84,11 +64,7 @@ public class Ball : MonoBehaviour
         //Asignar la velocidad inicial a la pelota
         rb.velocity = new Vector2(xVelocity, yVelocity) * initVelocity;
 
-        // Iniciar la estela cuando la pelota se lanza
-        if (trailParticles != null && enableTrail)
-        {
-            trailParticles.Play();
-        }
+
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -98,8 +74,11 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("Paddle"))
         {
             rb.velocity = rb.velocity * velocityMultiplier;
+            //Intanciar sonido de rebote con la raqueta
 
 
+            //Instanciar sprite de choque con la raqueta
+            Instantiate(particle);
         }
     }
 
@@ -110,17 +89,6 @@ public class Ball : MonoBehaviour
         rb.velocity = Vector2.zero;
         rb.angularVelocity = 0f;
 
-        // Detener la estela cuando la pelota se detiene
-        if (trailParticles != null && trailParticles.isPlaying)
-        {
-            trailParticles.Stop();
-        }
-
-        // Limpiar el trail renderer
-        if (trailRenderer != null)
-        {
-            trailRenderer.Clear();
-        }
     }
 
     // Método público para reanudar el movimiento de la pelota
@@ -132,6 +100,7 @@ public class Ball : MonoBehaviour
         }
     }
 
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         //Si la pelota toca la meta del lado izquierdo
@@ -141,6 +110,12 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleRightScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
+
+
+            //Instanciar sprite explosion en la posición de la pelota
+            GameObject explosionInstance = Instantiate(particle, transform.position, Quaternion.identity);
+
+            Destroy(explosionInstance, 2f);
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
@@ -154,6 +129,12 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleLeftScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
+
+
+            //Instanciar sprite explosion en la posición de la pelota
+            GameObject explosionInstance = Instantiate(particle, transform.position, Quaternion.identity);
+
+            Destroy(explosionInstance, 2f); // Destruye la instancia después de 1 segundo
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
