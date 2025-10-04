@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Paddle : MonoBehaviour
 {
@@ -15,11 +16,21 @@ public class Paddle : MonoBehaviour
 
     public Animator animator;
 
+    // Variable para controlar si ya se inició el reinicio de escena
+    private static bool gameEnded = false;
+
+    // Variable para controlar si ya se ejecutó la animación de muerte en este paddle
+    private bool deathAnimationExecuted = false;
+
     // Start is called before the first frame update
     void Start()
     {
         //Obtener referencia de rigidbody
         rb = GetComponent<Rigidbody2D>();
+
+        // Reiniciar todas las variables para la nueva partida
+        deathAnimationExecuted = false;
+        gameEnded = false;
     }
 
     // Update is called once per frame
@@ -65,36 +76,97 @@ public class Paddle : MonoBehaviour
     }
     void VerifyWinner()
     {
+        // Solo verificar si el juego no ha terminado aún
+        if (gameEnded) return;
+
         // Acceder a los puntajes desde GameManager
-        if (GameManager.Instance.GetPaddleLeftScore() >= 10)
+        if (GameManager.Instance.GetPaddleLeftScore() >= 1)
         {
             Debug.Log("Ganó la raqueta izquierda");
-            // Si esta raqueta es la derecha (perdedora), ejecuta animación de muerte
-            if (!PaddingLeft)
+
+            // Marcar que el juego ha terminado
+            gameEnded = true;
+
+            // Detener la pelota cuando hay un ganador
+            StopBallOnWin();
+
+            // Si esta raqueta es la derecha (perdedora), ejecuta animación de muerte INMEDIATAMENTE
+            if (!PaddingLeft && !deathAnimationExecuted)
             {
                 ExecuteDeathAnimation();
             }
-        }
-        else if (GameManager.Instance.GetPaddleRightScore() >= 10)
-        {
-            Debug.Log("Ganó la raqueta derecha");
-            // Si esta raqueta es la izquierda (perdedora), ejecuta animación de muerte
+
+            // Solo el paddle izquierdo (ganador) inicia el reinicio para evitar múltiples corrutinas
             if (PaddingLeft)
             {
+                StartCoroutine(RestartSceneAfterDelay(5f));
+            }
+        }
+        else if (GameManager.Instance.GetPaddleRightScore() >= 1)
+        {
+            Debug.Log("Ganó la raqueta derecha");
+
+            // Marcar que el juego ha terminado
+            gameEnded = true;
+
+            // Detener la pelota cuando hay un ganador
+            StopBallOnWin();
+
+            // Si esta raqueta es la izquierda (perdedora), ejecuta animación de muerte INMEDIATAMENTE
+            if (PaddingLeft && !deathAnimationExecuted)
+            {
                 ExecuteDeathAnimation();
+            }
+
+            // Solo el paddle derecho (ganador) inicia el reinicio para evitar múltiples corrutinas
+            if (!PaddingLeft)
+            {
+                StartCoroutine(RestartSceneAfterDelay(5f));
             }
         }
     }
 
+    void StopBallOnWin()
+    {
+        // Buscar la pelota en la escena
+        GameObject ball = GameObject.FindGameObjectWithTag("Ball");
+        if (ball != null)
+        {
+            Ball ballScript = ball.GetComponent<Ball>();
+            if (ballScript != null)
+            {
+                ballScript.StopBall();
+            }
+        }
+    }
+
+    // Corrutina para reiniciar la escena después de un delay
+    IEnumerator RestartSceneAfterDelay(float delay)
+    {
+        Debug.Log($"La escena se reiniciará en {delay} segundos...");
+
+        // Esperar el tiempo especificado
+        yield return new WaitForSeconds(delay);
+
+        // Obtener el nombre de la escena actual y recargarla
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentSceneName);
+    }
+
     void ExecuteDeathAnimation()
     {
+        // Marcar que la animación ya se ejecutó
+        deathAnimationExecuted = true;
+
         // Ejecutar trigger de muerte
-        animator.SetTrigger("Die");
+        animator.SetTrigger("die");
 
         // Desactivar el movimiento para que no interfiera con la animación
         moveSpeed = 0f;
 
         // Opcional: Desactivar el collider para que no interactúe más con la pelota
         GetComponent<Collider2D>().enabled = false;
+
+        Debug.Log($"Animación de muerte ejecutada para paddle: {(PaddingLeft ? "Izquierdo" : "Derecho")}");
     }
 }

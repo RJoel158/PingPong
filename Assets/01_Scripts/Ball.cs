@@ -6,8 +6,7 @@ public class Ball : MonoBehaviour
 {
     //Puntos que sumara
     public int points = 1;
-   
-    
+
     //valocidad inicial de la pelota, con la que comenzara
     public float initVelocity = 4f;
 
@@ -29,7 +28,7 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     void Launch()
@@ -49,11 +48,27 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("Paddle"))
         {
             rb.velocity = rb.velocity * velocityMultiplier;
-            
-            
+
+
         }
     }
-   
+
+
+    // Método público para detener la pelota
+    public void StopBall()
+    {
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+    }
+
+    // Método público para reanudar el movimiento de la pelota
+    public void ResumeBall()
+    {
+        if (rb.velocity == Vector2.zero)
+        {
+            Launch();
+        }
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {

@@ -7,6 +7,8 @@ TagManager:
   - Paddle
   - GoalLeft
   - GoalRight
+  - Ball
+  - Ground
   layers:
   - Default
   - TransparentFX
