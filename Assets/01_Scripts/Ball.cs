@@ -6,8 +6,7 @@ public class Ball : MonoBehaviour
 {
     //Puntos que sumara
     public int points = 1;
-   
-    
+
     //valocidad inicial de la pelota, con la que comenzara
     public float initVelocity = 4f;
 
@@ -15,22 +14,57 @@ public class Ball : MonoBehaviour
     //Ajustar la velocidad de la pelota:
     //Auemnta un 10% mas al collisionar con un paddle
     public float velocityMultiplier = 1.1f;
+    public GameObject particle;
+
+    // Sistema de estela
 
     Rigidbody2D rb;
+
+    //Variables para el sonido al chocar con la pelota
+    public AudioClip hitSound; //sonido al momento de choque
+    private AudioSource audioSource;
+
+    //Variables para el sonido al momento de que un jugador pierda
+    public AudioClip gameOverSound;
+    
 
     // Start is called before the first frame update
     void Start()
     {
         //Referencia de riginbody
         rb = GetComponent<Rigidbody2D>();
+
         Launch();
+
+        //LLamada para obtener el audiosource en el mismo objeto
+        audioSource = GetComponent<AudioSource>();
     }
+
+
 
     // Update is called once per frame
     void Update()
     {
-        
+        HandleBallFlip();
     }
+
+    void HandleBallFlip()
+    {
+        // Verificar la dirección de la pelota
+        if (rb.velocity.x < 0) // Se mueve hacia la izquierda
+        {
+            // Hacer flip en X (escala negativa)
+            transform.localScale = new Vector3(-1.7f, 1.7f, 1f);
+        }
+        else if (rb.velocity.x > 0) // Se mueve hacia la derecha
+        {
+            // Escala normal
+            transform.localScale = new Vector3(1.7f, 1.7f, 1f);
+        }
+        // Si rb.velocity.x == 0, mantener la escala actual
+    }
+
+
 
     void Launch()
     {
@@ -40,21 +74,46 @@ public class Ball : MonoBehaviour
 
         //Asignar la velocidad inicial a la pelota
         rb.velocity = new Vector2(xVelocity, yVelocity) * initVelocity;
+
+
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         //Cuando colisione con una raqueta que tiene el tage de Paddle, multiplicamo su velocidad actual por el valor de la variable velocityMultiplier
         //Por defecto esta en 10% deifnido arriba, totalmente regulable
-        if (collision.gameObject.CompareTag("Paddle"))
+        if (collision.gameObject.CompareTag("Paddle"))         
         {
             rb.velocity = rb.velocity * velocityMultiplier;
-            
+            //Intanciar sonido de rebote con la raqueta
+
+            //lo puse aqui adentro para cuando choque con alguno de los paddle suene
+            //PlayOneShot es para reproducir algo específico una sola vez aunque haya otros sonidos
+            //hitsound es la referencia al archivo de audio 
+            audioSource.PlayOneShot(hitSound);
             
         }
     }
-   
 
+
+    // Método público para detener la pelota
+    public void StopBall()
+    {
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+
+    }
+
+    // Método público para reanudar el movimiento de la pelota
+    public void ResumeBall()
+    {
+        if (rb.velocity == Vector2.zero)
+        {
+            Launch();
+        }
+    }
+
+    
     private void OnTriggerEnter2D(Collider2D collision)
     {
         //Si la pelota toca la meta del lado izquierdo
@@ -64,6 +123,12 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleRightScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
+
+            //Suena gameover cuando mete gol
+            audioSource.PlayOneShot(gameOverSound);
+            
+            //Iniciar efecto de explosión con desvanecimiento
+            
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
@@ -77,6 +142,14 @@ public class Ball : MonoBehaviour
             GameManager.Instance.AddPaddleLeftScore(points);
 
             //Reiniciar la posici�n de la pelota y las raquetas
+
+
+            //Instanciar sprite explosion en la posición de la pelota
+
+            //Suena gameover cuando mete gol
+            audioSource.PlayOneShot(gameOverSound);
+            //Iniciar efecto de explosión con desvanecimiento
+
             GameManager.Instance.Restart();
 
             //Lanzar la pelota en una nueva direcci�n
