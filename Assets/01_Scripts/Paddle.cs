@@ -6,31 +6,45 @@ using UnityEngine.SceneManagement;
 public class Paddle : MonoBehaviour
 {
     Rigidbody2D rb;
-    //Velocidad de movimiento de las raquetas
+    // Movement speed of the paddles
     public float moveSpeed = 7f;
-    //Maxima distancia que puede recorrer la raqueta en el eje Y, ya sea con + o -
+    // Maximum distance the paddle can travel on the Y axis, either positive or negative
     public float yBound = 3.5f;
 
-    //Indetificador de: si es la raqueta izquierda = true, si es la raqueta derecha = false
+    // Identifier: if it's the left paddle = true, if it's the right paddle = false
     public bool PaddingLeft = false;
 
     public Animator animator;
 
-    // Variable para controlar si ya se inició el reinicio de escena
+    // Variable to control if scene restart has already been initiated
     private static bool gameEnded = false;
 
-    // Variable para controlar si ya se ejecutó la animación de muerte en este paddle
+    // Variable to control if death animation has already been executed on this paddle
     private bool deathAnimationExecuted = false;    // Start is called before the first frame update
     void Start()
     {
-        //Obtener referencia de rigidbody
+        // Get rigidbody reference
         rb = GetComponent<Rigidbody2D>();
 
-        // Reiniciar variables para nueva partida
+        // Get Animator reference if not manually assigned
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+            if (animator != null)
+            {
+                Debug.Log($"Animator found automatically on {(PaddingLeft ? "Left Paddle" : "Right Paddle")}");
+            }
+            else
+            {
+                Debug.LogWarning($"No Animator found on {(PaddingLeft ? "Left Paddle" : "Right Paddle")}");
+            }
+        }
+
+        // Reset variables for new game
         deathAnimationExecuted = false;
         gameEnded = false;
 
-        Debug.Log($"🔄 NUEVA PARTIDA - Paddle {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} iniciado");
+        Debug.Log($"NEW GAME - Paddle {(PaddingLeft ? "LEFT" : "RIGHT")} initialized");
     }    // Update is called once per frame
     void Update()
     {
@@ -43,77 +57,85 @@ public class Paddle : MonoBehaviour
         float inputMovement;
         if (PaddingLeft)
         {
-            //Si es raqueta de izquierda, tonces obtebemos w y s
+            // If it's the left paddle, then we get W and S keys
             inputMovement = Input.GetAxisRaw("VerticalLeft");
         }
         else
         {
-            //Sino flecha arriba y abajo
+            // Otherwise up and down arrow keys
             inputMovement = Input.GetAxisRaw("VerticalRight");
         }
 
-        //Simulacion de donde iria la pelota en el siguiente frame, primero obtener la posicion actual
+        // Simulation of where the paddle would go in the next frame, first get current position
         Vector2 paddlePosition = transform.position;
 
-        //Mathf.Clamp limita un valor dentro de un rango:
-        //- Si el valor est� entre min y max, lo devuelve igual.
-        //- Si el valor es menor que min, devuelve min.
-        //- Si el valor es mayor que max, devuelve max
-        //Limitar que la raqueta salga de rango, definido en yBound
+        // Mathf.Clamp limits a value within a range:
+        // - If the value is between min and max, returns it as is
+        // - If the value is less than min, returns min
+        // - If the value is greater than max, returns max
+        // Limit the paddle from going out of range, defined by yBound
         paddlePosition.y = Mathf.Clamp(paddlePosition.y + inputMovement * moveSpeed * Time.deltaTime, -yBound, yBound);
 
-        //Pasamos ese valor al transform de este gameObject
+        // Pass that value to the transform of this gameObject
         transform.position = paddlePosition;
     }
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.gameObject.CompareTag("Ball"))
         {
-            animator.SetTrigger("hiting");
+            // Only try animation if animator exists
+            if (animator != null)
+            {
+                animator.SetTrigger("hiting");
+            }
+            else
+            {
+                Debug.LogWarning($"Animator not configured on {(PaddingLeft ? "Left Paddle" : "Right Paddle")}");
+            }
         }
     }
     void VerifyWinner()
     {
-        // Si ya ejecuté mi animación de muerte, no hacer nada más
+        // If I already executed my death animation, do nothing more
         if (deathAnimationExecuted) return;
 
-        // Verificar condiciones de victoria
-        bool leftWon = GameManager.Instance.GetPaddleLeftScore() >= 1;
-        bool rightWon = GameManager.Instance.GetPaddleRightScore() >= 1;
+        // Check victory conditions
+        bool leftWon = GameManager.Instance.GetPaddleLeftScore() >= 10;
+        bool rightWon = GameManager.Instance.GetPaddleRightScore() >= 10;
 
-        // Si alguien ganó, procesar INMEDIATAMENTE
+        // If someone won, process IMMEDIATELY
         if (leftWon || rightWon)
         {
-            Debug.Log($" PADDLE {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} detectó victoria: leftWon={leftWon}, rightWon={rightWon}, gameEnded={gameEnded}");
+            Debug.Log($"PADDLE {(PaddingLeft ? "LEFT" : "RIGHT")} detected victory: leftWon={leftWon}, rightWon={rightWon}, gameEnded={gameEnded}");
 
-            // Solo detener la pelota una vez (el primer paddle que detecte)
+            // Only stop the ball once (the first paddle that detects)
             if (!gameEnded)
             {
                 gameEnded = true;
                 StopBallOnWin();
-                Debug.Log(" Pelota detenida por primera vez");
+                Debug.Log("Ball stopped for the first time");
             }
 
-            // Verificar si ESTE paddle debe ejecutar animación de muerte
+            // Check if THIS paddle should execute death animation
             bool shouldDie = (PaddingLeft && rightWon) || (!PaddingLeft && leftWon);
 
             if (shouldDie && !deathAnimationExecuted)
             {
-                Debug.Log($" PADDLE {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} perdió - Ejecutando animación");
+                Debug.Log($"PADDLE {(PaddingLeft ? "LEFT" : "RIGHT")} lost - Executing animation");
                 ExecuteDeathAnimation();
 
-                // Solo el perdedor inicia el reinicio
+                // Only the loser initiates the restart
                 StartCoroutine(RestartSceneAfterDelay(5f));
             }
             else if (!shouldDie)
             {
-                Debug.Log($" PADDLE {(PaddingLeft ? "IZQUIERDO" : "DERECHO")} ganó - Sin animación");
+                Debug.Log($"PADDLE {(PaddingLeft ? "LEFT" : "RIGHT")} won - No animation");
             }
         }
     }
     void StopBallOnWin()
     {
-        // Buscar la pelota en la escena
+        // Find the ball in the scene
         GameObject ball = GameObject.FindGameObjectWithTag("Ball");
         if (ball != null)
         {
@@ -125,43 +147,43 @@ public class Paddle : MonoBehaviour
         }
     }
 
-    // Corrutina para reiniciar la escena después de un delay
+    // Coroutine to restart the scene after a delay
     IEnumerator RestartSceneAfterDelay(float delay)
     {
-        Debug.Log($"La escena se reiniciará en {delay} segundos...");
+        Debug.Log($"Scene will restart in {delay} seconds...");
 
-        // Esperar el tiempo especificado
+        // Wait for the specified time
         yield return new WaitForSeconds(delay);
 
-        // Obtener el nombre de la escena actual y recargarla
+        // Get current scene name and reload it
         string currentSceneName = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene(currentSceneName);
     }
 
     void ExecuteDeathAnimation()
     {
-        Debug.Log($" INICIANDO ExecuteDeathAnimation para paddle: {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+        Debug.Log($"STARTING ExecuteDeathAnimation for paddle: {(PaddingLeft ? "Left" : "Right")}");
 
-        // Marcar que la animación ya se ejecutó
+        // Mark that the animation has already been executed
         deathAnimationExecuted = true;
 
-        // Ejecutar trigger de muerte
+        // Execute death trigger
         if (animator != null)
         {
             animator.SetTrigger("die");
-            Debug.Log($" Trigger 'die' enviado al animator del paddle {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+            Debug.Log($"Trigger 'die' sent to animator of paddle {(PaddingLeft ? "Left" : "Right")}");
         }
         else
         {
-            Debug.LogError($" Animator es NULL en paddle {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+            Debug.LogError($"Animator is NULL on paddle {(PaddingLeft ? "Left" : "Right")}");
         }
 
-        // Desactivar el movimiento para que no interfiera con la animación
+        // Disable movement so it doesn't interfere with animation
         moveSpeed = 0f;
 
-        // Opcional: Desactivar el collider para que no interactúe más con la pelota
+        // Optional: Disable collider so it no longer interacts with the ball
         GetComponent<Collider2D>().enabled = false;
 
-        Debug.Log($" Animación de muerte completada para paddle: {(PaddingLeft ? "Izquierdo" : "Derecho")}");
+        Debug.Log($"Death animation completed for paddle: {(PaddingLeft ? "Left" : "Right")}");
     }
 }

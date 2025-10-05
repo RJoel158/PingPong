@@ -5,20 +5,20 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    //textos del puntaje
+    // Score texts
     public TMP_Text txtPaddleLeftScore;
     public TMP_Text txtPaddleRightScore;
 
-    //Referencia de las raquetas y pelota
+    // Reference to paddles and ball
     public Transform paddleLeft;
     public Transform paddleRight;
     public Transform ball;
 
-    //variables que tendran el puntaje
+    // Variables that will hold the score
     int paddleLeftScore = 0;
     int paddleRightScore = 0;
 
-    //Singleton
+    // Singleton
     public static GameManager Instance;
 
     private void Awake()
@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); //Hace que no se destruya al cambiar de escena
+            DontDestroyOnLoad(gameObject); // Prevents destruction when changing scenes
         }
         else
         {
@@ -46,21 +46,21 @@ public class GameManager : MonoBehaviour
 
     }
 
-    //Metodo para sumar puntos a la variable del lado izquierdo, y mostrar en pantalla atraves de su correspondiente texto
+    // Method to add points to the left side variable, and display on screen through its corresponding text
     public void AddPaddleLeftScore(int points)
     {
         paddleLeftScore += points;
         txtPaddleLeftScore.text = paddleLeftScore.ToString();
     }
 
-    //Metodo para sumar puntos a la variable del lado derecho, y mostrar en pantalla atraves de su correspondiente texto
+    // Method to add points to the right side variable, and display on screen through its corresponding text
     public void AddPaddleRightScore(int points)
     {
         paddleRightScore += points;
         txtPaddleRightScore.text = paddleRightScore.ToString();
     }
 
-    //Metodo que reinicia a la posiciones iniciales, se llamara desde de sumar un punto cualquier lado
+    // Method that resets to initial positions, will be called after adding a point on either side
     public void Restart()
     {
         paddleLeft.position = new Vector2(paddleLeft.position.x, 0);
@@ -68,7 +68,7 @@ public class GameManager : MonoBehaviour
         ball.position = new Vector2(0, 0);
     }
 
-    //Métodos para obtener los puntajes desde otros scripts
+    // Methods to get scores from other scripts
     public int GetPaddleLeftScore()
     {
         return paddleLeftScore;

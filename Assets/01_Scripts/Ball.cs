@@ -4,40 +4,54 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-    //Puntos que sumara
+    // Points that will be added
     public int points = 1;
 
-    //valocidad inicial de la pelota, con la que comenzara
+    // Initial velocity of the ball, with which it will start
     public float initVelocity = 4f;
 
-    //Mejoras y extras
-    //Ajustar la velocidad de la pelota:
-    //Auemnta un 10% mas al collisionar con un paddle
+    // Improvements and extras
+    // Adjust the ball velocity:
+    // Increases 10% more when colliding with a paddle
     public float velocityMultiplier = 1.1f;
-    public GameObject particle;
 
-    // Sistema de estela
+
+    // Trail system
 
     Rigidbody2D rb;
 
-    //Variables para el sonido al chocar con la pelota
-    public AudioClip hitSound; //sonido al momento de choque
+    // Variables for sound when colliding with the ball
+    public AudioClip hitSound; // Sound at the moment of collision
     private AudioSource audioSource;
 
-    //Variables para el sonido al momento de que un jugador pierda
+    // Variables for sound when a player loses
     public AudioClip gameOverSound;
-    
+
 
     // Start is called before the first frame update
     void Start()
     {
-        //Referencia de riginbody
+        // Rigidbody reference
         rb = GetComponent<Rigidbody2D>();
 
         Launch();
 
-        //LLamada para obtener el audiosource en el mismo objeto
+        // Call to get the audiosource on the same object
         audioSource = GetComponent<AudioSource>();
+
+        // If there's no AudioSource, create one automatically
+        if (audioSource == null)
+        {
+            Debug.Log("Creating AudioSource automatically for Ball");
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false; // Don't play on start
+            audioSource.volume = 1.0f; // Full volume
+        }
+
+        // Debug to verify that AudioSource and clips are configured
+        Debug.Log($"AudioSource found: {audioSource != null}");
+        Debug.Log($"HitSound assigned: {hitSound != null}");
+        Debug.Log($"GameOverSound assigned: {gameOverSound != null}");
     }
 
 
@@ -50,29 +64,29 @@ public class Ball : MonoBehaviour
 
     void HandleBallFlip()
     {
-        // Verificar la dirección de la pelota
-        if (rb.velocity.x < 0) // Se mueve hacia la izquierda
+        // Check the ball direction
+        if (rb.velocity.x < 0) // Moving to the left
         {
-            // Hacer flip en X (escala negativa)
+            // Flip on X axis (negative scale)
             transform.localScale = new Vector3(-1.7f, 1.7f, 1f);
         }
-        else if (rb.velocity.x > 0) // Se mueve hacia la derecha
+        else if (rb.velocity.x > 0) // Moving to the right
         {
-            // Escala normal
+            // Normal scale
             transform.localScale = new Vector3(1.7f, 1.7f, 1f);
         }
-        // Si rb.velocity.x == 0, mantener la escala actual
+        // If rb.velocity.x == 0, maintain current scale
     }
 
 
 
     void Launch()
     {
-        //Definir que direccion va tomar la pelota de manera inicial de forma randomica en el eje x - y
+        // Define which direction the ball will take initially randomly on the x and y axis
         float xVelocity = Random.Range(0, 2) == 1 ? 1 : -1;
         float yVelocity = Random.Range(0, 2) == 1 ? 1 : -1;
 
-        //Asignar la velocidad inicial a la pelota
+        // Assign initial velocity to the ball
         rb.velocity = new Vector2(xVelocity, yVelocity) * initVelocity;
 
 
@@ -80,23 +94,31 @@ public class Ball : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        //Cuando colisione con una raqueta que tiene el tage de Paddle, multiplicamo su velocidad actual por el valor de la variable velocityMultiplier
-        //Por defecto esta en 10% deifnido arriba, totalmente regulable
-        if (collision.gameObject.CompareTag("Paddle"))         
+        // When colliding with a paddle that has the Paddle tag, multiply its current velocity by the velocityMultiplier variable value
+        // By default it's at 10% defined above, totally adjustable
+        if (collision.gameObject.CompareTag("Paddle"))
         {
             rb.velocity = rb.velocity * velocityMultiplier;
-            //Intanciar sonido de rebote con la raqueta
+            // Instantiate bounce sound with the paddle
 
-            //lo puse aqui adentro para cuando choque con alguno de los paddle suene
-            //PlayOneShot es para reproducir algo específico una sola vez aunque haya otros sonidos
-            //hitsound es la referencia al archivo de audio 
-            audioSource.PlayOneShot(hitSound);
-            
+            // I put it here so when it collides with any paddle it sounds
+            // PlayOneShot is to play something specific once even if there are other sounds
+            // hitsound is the reference to the audio file
+            if (audioSource != null && hitSound != null)
+            {
+                Debug.Log("Playing hit sound");
+                audioSource.PlayOneShot(hitSound);
+            }
+            else
+            {
+                Debug.LogWarning($"Cannot play sound: audioSource={audioSource != null}, hitSound={hitSound != null}");
+            }
+
         }
     }
 
 
-    // Método público para detener la pelota
+    // Public method to stop the ball
     public void StopBall()
     {
         rb.velocity = Vector2.zero;
@@ -104,7 +126,7 @@ public class Ball : MonoBehaviour
 
     }
 
-    // Método público para reanudar el movimiento de la pelota
+    // Public method to resume ball movement
     public void ResumeBall()
     {
         if (rb.velocity == Vector2.zero)
@@ -113,46 +135,62 @@ public class Ball : MonoBehaviour
         }
     }
 
-    
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //Si la pelota toca la meta del lado izquierdo
+        // If the ball touches the left side goal
         if (collision.gameObject.CompareTag("GoalLeft"))
         {
-            //Aumentar el puntaje del jugador derecho
+            // Increase right player score
             GameManager.Instance.AddPaddleRightScore(points);
 
-            //Reiniciar la posici�n de la pelota y las raquetas
+            // Restart ball and paddle positions
 
-            //Suena gameover cuando mete gol
-            audioSource.PlayOneShot(gameOverSound);
-            
-            //Iniciar efecto de explosión con desvanecimiento
-            
+            // Play gameover sound when scoring goal
+            if (audioSource != null && gameOverSound != null)
+            {
+                Debug.Log("Playing game over sound (right player scores)");
+                audioSource.PlayOneShot(gameOverSound);
+            }
+            else
+            {
+                Debug.LogWarning($"Cannot play game over sound: audioSource={audioSource != null}, gameOverSound={gameOverSound != null}");
+            }
+
+            // Start explosion effect with fade
+
             GameManager.Instance.Restart();
 
-            //Lanzar la pelota en una nueva direcci�n
+            // Launch the ball in a new direction
             Launch();
         }
 
-        //Si la pelota toca la meta del lado derecho
+        // If the ball touches the right side goal
         if (collision.gameObject.CompareTag("GoalRight"))
         {
-            //Aumentar el puntaje del jugador izquierdo
+            // Increase left player score
             GameManager.Instance.AddPaddleLeftScore(points);
 
-            //Reiniciar la posici�n de la pelota y las raquetas
+            // Restart ball and paddle positions
 
 
-            //Instanciar sprite explosion en la posición de la pelota
+            // Instantiate explosion sprite at ball position
 
-            //Suena gameover cuando mete gol
-            audioSource.PlayOneShot(gameOverSound);
-            //Iniciar efecto de explosión con desvanecimiento
+            // Play gameover sound when scoring goal
+            if (audioSource != null && gameOverSound != null)
+            {
+                Debug.Log("Playing game over sound (left player scores)");
+                audioSource.PlayOneShot(gameOverSound);
+            }
+            else
+            {
+                Debug.LogWarning($"Cannot play game over sound: audioSource={audioSource != null}, gameOverSound={gameOverSound != null}");
+            }
+            // Start explosion effect with fade
 
             GameManager.Instance.Restart();
 
-            //Lanzar la pelota en una nueva direcci�n
+            // Launch the ball in a new direction
             Launch();
         }
     }
