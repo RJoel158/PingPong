@@ -124,8 +124,8 @@ public class Paddle : MonoBehaviour
                 Debug.Log($"PADDLE {(PaddingLeft ? "LEFT" : "RIGHT")} lost - Executing animation");
                 ExecuteDeathAnimation();
 
-                // Only the loser initiates the restart
-                StartCoroutine(RestartSceneAfterDelay(5f));
+                // Only the loser initiates the return to main menu
+                StartCoroutine(ReturnToMainMenuAfterDelay(5f));
             }
             else if (!shouldDie)
             {
@@ -147,17 +147,17 @@ public class Paddle : MonoBehaviour
         }
     }
 
-    // Coroutine to restart the scene after a delay
-    IEnumerator RestartSceneAfterDelay(float delay)
+    // Coroutine to return to main menu after a delay
+    IEnumerator ReturnToMainMenuAfterDelay(float delay)
     {
-        Debug.Log($"Scene will restart in {delay} seconds...");
+        Debug.Log($"Returning to Main Menu in {delay} seconds...");
 
         // Wait for the specified time
         yield return new WaitForSeconds(delay);
 
-        // Get current scene name and reload it
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(currentSceneName);
+        // Load the MainMenu scene
+        Debug.Log("Loading MainMenu scene...");
+        SceneManager.LoadScene("MainMenu");
     }
 
     void ExecuteDeathAnimation()
