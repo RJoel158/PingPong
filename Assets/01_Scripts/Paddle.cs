@@ -186,4 +186,27 @@ public class Paddle : MonoBehaviour
 
         Debug.Log($"Death animation completed for paddle: {(PaddingLeft ? "Left" : "Right")}");
     }
+
+    // Static method to reset all static variables for a fresh game start
+    public static void ResetStaticVariables()
+    {
+        gameEnded = false;
+        Debug.Log("Paddle static variables reset");
+    }
+
+    // Public method to reset this paddle's instance variables
+    public void ResetPaddleState()
+    {
+        deathAnimationExecuted = false;
+        moveSpeed = 7f; // Reset to default speed
+
+        // Re-enable collider if it was disabled
+        Collider2D paddleCollider = GetComponent<Collider2D>();
+        if (paddleCollider != null)
+        {
+            paddleCollider.enabled = true;
+        }
+
+        Debug.Log($"Paddle {(PaddingLeft ? "Left" : "Right")} state reset");
+    }
 }

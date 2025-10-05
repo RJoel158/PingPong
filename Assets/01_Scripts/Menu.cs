@@ -16,6 +16,20 @@ public class Menu : MonoBehaviour
     {
         string sceneName = "SceneSpritesWithAudio";
 
+        // Reset game state before starting a new game
+        Debug.Log("Starting new game - Destroying old GameManager for fresh start...");
+
+        // Destroy existing GameManager to ensure completely fresh start
+        if (GameManager.Instance != null)
+        {
+            Debug.Log("Destroying existing GameManager instance");
+            Destroy(GameManager.Instance.gameObject);
+            GameManager.Instance = null;
+        }
+
+        // Reset Paddle static variables
+        Paddle.ResetStaticVariables();
+
         try
         {
             Debug.Log($"Attempting to load scene: {sceneName}");
